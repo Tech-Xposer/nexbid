@@ -1,0 +1,19 @@
+{
+  "name": "nexbid",
+  "version": "1.0.0",
+  "description": "RESTful API for a real-time bidding platform using Node.js and Express.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tech-Xposer/nexbid.git"
+  },
+  "author": "Ashutosh Sharma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tech-Xposer/nexbid/issues"
+  },
+  "homepage": "https://github.com/Tech-Xposer/nexbid#readme"
+}
