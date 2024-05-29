@@ -27,21 +27,10 @@ CREATE DATABASE nexbid;
 ```
 USE nexbid;
 
-CREATE TABLE items (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT NOT NULL,
-  starting_price DECIMAL(10, 2) NOT NULL,
-  current_price DECIMAL(10, 2) DEFAULT 0.00,
-  image_url VARCHAR(255),
-  end_time TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -54,6 +43,17 @@ CREATE TABLE bids (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (item_id) REFERENCES items(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  starting_price DECIMAL(10, 2) NOT NULL,
+  current_price DECIMAL(10, 2) DEFAULT 0.00,
+  image_url VARCHAR(255),
+  end_time TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE notifications (
