@@ -18,12 +18,15 @@ First, clone the repository to your local machine using Git:
 git clone https://github.com/Tech-Xposer/nexbid.git
 cd nexbid
 ```
+
 ### Set up MySQL Database
+
 ```
 CREATE DATABASE nexbid;
 ```
 
 ### Create the necessary tables.
+
 ```
 USE nexbid;
 
@@ -68,11 +71,15 @@ CREATE TABLE notifications (
 ```
 
 ### Install Required Packages
+
 Navigate to the project directory and install the necessary packages using npm:
+
 ```bash
 npm install
 ```
+
 ### Create the .env File
+
 Create a .env file in the root of the project directory and add the following environment variables
 
 ```
@@ -80,24 +87,26 @@ DB_NAME=nexbid
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=yourpassword
-
+JWT_SECRET=yoursecretkey
+ADMIN_MAIL=your email
+ADMIN_PASSWORD=yourpassword
+COOKIE_SECRET=yoursecretkey
 ```
+
 Replace <ins>yourpassword</ins> with your actual MySQL root password
 
 ### Run the Project
+
 Start the project using npm:
+
 ```Bash
 npm start
 ```
+
 Alternatively, you can start the project using Node.js directly:
+
 ```Bash
 node index.js
 ```
 
-
-
-
-
-
-
- This `README.md` file provides a clear and comprehensive guide to setting up and running the NexBid project. It includes all necessary steps, from cloning the repository and setting up the MySQL database to installing required packages and running the project.
+This `README.md` file provides a clear and comprehensive guide to setting up and running the NexBid project. It includes all necessary steps, from cloning the repository and setting up the MySQL database to installing required packages and running the project.

@@ -1,12 +1,16 @@
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import ApiResponse from "../handlers/response.handler.js";
 import { ApiError } from "../handlers/error.handler.js";
 import connection from "../config/db.js";
 import { userVerificationTemplate } from "../services/templates.service.js";
-import { createEmailVerificationToken } from "../services/token.service.js";
+import {
+	createEmailVerificationToken,
+	createUserLoginToken,
+} from "../services/token.service.js";
 import sendEmail from "../services/email.service.js";
+
 export const register = async (req, res) => {
 	try {
 		const { username, password, email, role } = req.body;
@@ -51,7 +55,7 @@ export const register = async (req, res) => {
 		);
 
 		// creating email verification token
-		const verificationToken = createEmailVerificationToken({ id:insertId });
+		const verificationToken = createEmailVerificationToken({ id: insertId });
 		const verificationLink = `${process.env.BASE_URL}/api/v1/users/verify/${verificationToken}`;
 
 		const checkMail = await sendEmail(
@@ -92,20 +96,19 @@ export const login = async (req, res) => {
 		if (user.length < 1) {
 			throw new ApiError(400, "User Not Found");
 		}
-
-		const isMatch = await bcrypt.compare(password, user[0].password);
+		const currentUser = user[0];
+		const isMatch = await bcrypt.compare(password, currentUser.password);
 		if (!isMatch) {
 			throw new ApiError(400, "Invalid Password");
 		}
 
 		//check is user verified
-		if (user[0].is_verified===0) {
+		if (currentUser.is_verified === 0) {
 			throw new ApiError(400, "Please Verify Your Email");
 		}
-
-		const token = jwt.sign({ id: user[0].id }, process.env.JWT_SECRET, {
-			expiresIn: "1d",
-		});
+		console.log(currentUser);
+		const token = createUserLoginToken({ id: currentUser.id });
+		console.log(token);
 		res.cookie("token", token, options);
 		return ApiResponse.success(res, 200, "Login Successful", {
 			token,
@@ -126,7 +129,7 @@ export const getUserProfile = async (req, res) => {
 				console.log("result->", res);
 			}
 		);
-		console.log(user)
+		console.log(user);
 		return ApiResponse.success(res, 200, "User Profile", user[0]);
 	} catch (error) {
 		return ApiResponse.error(res, error.message, error.statusCode || 500);
@@ -137,7 +140,7 @@ export const verifyUser = async (req, res) => {
 	try {
 		const { token } = req.params;
 		const payload = jwt.verify(token, process.env.JWT_SECRET);
-		console.log(payload)
+		console.log(payload);
 		const [user] = await connection.execute(
 			"SELECT * FROM USERS WHERE id = ?",
 			[payload.id],
@@ -160,7 +163,9 @@ export const verifyUser = async (req, res) => {
 			}
 		);
 
-		return ApiResponse.success(res, 200, "User Verified Successfully", {id:payload.id});
+		return ApiResponse.success(res, 200, "User Verified Successfully", {
+			id: payload.id,
+		});
 	} catch (err) {
 		return ApiResponse.error(res, err.message, err.statusCode || 500);
 	}
