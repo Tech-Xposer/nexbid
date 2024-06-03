@@ -63,7 +63,7 @@ export const register = async (req, res) => {
 			userVerificationTemplate(username, verificationLink)
 		);
 
-		return ApiResponse.success(res, 201, "User Created Successfully", {
+		return ApiResponse.created(res, {
 			id: insertId,
 			username,
 			email,
@@ -129,7 +129,7 @@ export const getUserProfile = async (req, res) => {
 				console.log("result->", res);
 			}
 		);
-		console.log(user);
+		delete user[0].password
 		return ApiResponse.success(res, 200, "User Profile", user[0]);
 	} catch (error) {
 		return ApiResponse.error(res, error.message, error.statusCode || 500);
