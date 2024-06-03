@@ -34,8 +34,10 @@ export const createItem = async (req, res) => {
 			]
 		);
 
-		return ApiResponse.success(res, 201, "Item created successfully", {
+		return ApiResponse.created(res, {
 			itemId: result.insertId,
+			description: description,
+			name: name
 		});
 	} catch (error) {
 		return ApiResponse.error(res, error.message, error.statusCode || 500);
@@ -97,7 +99,7 @@ export const deleteItemById = async (req, res) => {
 			[id]
 		);
 
-		return ApiResponse.success(res, 200, "Item deleted successfully");
+		return ApiResponse.noContent(res);
 	} catch (error) {
 		return ApiResponse.error(res, error.message, error.statusCode || 500);
 	}
@@ -125,7 +127,7 @@ export const updateItemById = async (req, res) => {
             throw new ApiError(400, "All fields required!");
         }
         if (new Date(end_time) < new Date()) {
-            throw new ApiError(400, "End time must be in the future!");
+            throw new ApiError(401, "End time must be in the future!");
         }
         if (starting_price < 0) {
             throw new ApiError(400, "Starting price must be greater than 0!");
@@ -145,7 +147,7 @@ export const updateItemById = async (req, res) => {
             ]
         );
 
-        return ApiResponse.success(res, 200, "Item updated successfully");
+        return ApiResponse.success(res, 200, "Item updated successfully",result);
     } catch (error) {
         return ApiResponse.error(res, error.message, error.statusCode || 500);
     }
