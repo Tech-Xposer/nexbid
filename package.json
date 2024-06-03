@@ -4,7 +4,7 @@
   "description": "RESTful API for a real-time bidding platform using Node.js and Express.js",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require esm --recursive --exit",
+    "test": "mocha 'tests/**/*.test.js'",
     "start": "nodemon index.js"
   },
   "type": "module",
@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Tech-Xposer/nexbid#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "chai": "^5.1.1",
     "chai-http": "^4.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -36,8 +37,6 @@
     "ws": "^8.17.0"
   },
   "devDependencies": {
-    "chai": "^5.1.1",
-    "esm": "^3.2.25",
     "nodemon": "^3.1.2"
   }
 }
