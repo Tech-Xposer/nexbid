@@ -1,15 +1,16 @@
-import bcrypt from "bcrypt";
+
 import jwt from "jsonwebtoken";
-import validator from "validator";
 import ApiResponse from "../handlers/response.handler.js";
 import { ApiError } from "../handlers/error.handler.js";
 import connection from "../config/db.js";
-import { userVerificationTemplate } from "../services/templates.service.js";
+import { userPasswordResetTemplate, userVerificationTemplate } from "../services/templates.service.js";
 import {
 	createEmailVerificationToken,
 	createUserLoginToken,
 } from "../services/token.service.js";
 import sendEmail from "../services/email.service.js";
+import { hashPassword, isPasswordMatch } from "../utils/bcrypt.utils.js";
+import validator from "validator";
 
 export const register = async (req, res) => {
 	try {
@@ -45,8 +46,8 @@ export const register = async (req, res) => {
 		}
 
 		//hashing password
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+
+		const hashedPassword = await hashPassword(password);
 
 		// creating user
 		const [{ insertId }] = await connection.execute(
@@ -97,7 +98,7 @@ export const login = async (req, res) => {
 			throw new ApiError(400, "User Not Found");
 		}
 		const currentUser = user[0];
-		const isMatch = await bcrypt.compare(password, currentUser.password);
+		const isMatch = await isPasswordMatch(password, currentUser.password);
 		if (!isMatch) {
 			throw new ApiError(400, "Invalid Password");
 		}
@@ -129,7 +130,7 @@ export const getUserProfile = async (req, res) => {
 				console.log("result->", res);
 			}
 		);
-		delete user[0].password
+		delete user[0].password;
 		return ApiResponse.success(res, 200, "User Profile", user[0]);
 	} catch (error) {
 		return ApiResponse.error(res, error.message, error.statusCode || 500);
@@ -151,7 +152,7 @@ export const verifyUser = async (req, res) => {
 		);
 
 		if (user.length < 1) {
-			return ApiResponse.error(res, "User Not Found", 400);
+			throw new ApiError( 404, "User Not Found");
 		}
 
 		await connection.execute(
@@ -170,3 +171,80 @@ export const verifyUser = async (req, res) => {
 		return ApiResponse.error(res, err.message, err.statusCode || 500);
 	}
 };
+
+export const generateResetPasswordEmail = async (req, res) => {
+	try {
+		const { email } = req.body;
+		if (!email) {
+			throw new ApiError(400, "Email Required");
+		}
+		const [user] = await connection.execute(
+			"SELECT * FROM USERS WHERE email = ?",
+			[email],
+			(err, res) => {
+				if (err) throw err;
+				console.log("result->", res);
+			}
+		);
+		if (user.length < 1) {
+			throw new ApiError(404, "User Not Found");
+		}
+
+		const token = createEmailVerificationToken({ id: user[0].id });
+		const resetPasswordLink = `${process.env.BASE_URL}/api/v1/users/change-password/${token}`;
+		const checkMail = await sendEmail(
+			email,
+			userPasswordResetTemplate(user[0].name, resetPasswordLink)
+		);
+		return ApiResponse.success(res, 200, "Reset Password Email Sent", {
+			id: user[0].id,
+		});
+	} catch (err) {
+		return ApiResponse.error(res, err.message, err.statusCode || 500);
+	}
+};
+
+export const changePassword = async (req, res) => {
+	try {
+		const { token } = req.params;
+		const {password} = req.body;
+		//check is password strong
+		if (!password || password.length < 8) {
+			throw new ApiError(400, "Password must be at least 8 characters");
+		}
+		if(!validator.isStrongPassword(password)){
+			throw new ApiError(400, "Password must be strong");
+		}
+		const payload = jwt.verify(token, process.env.JWT_SECRET);
+		console.log(payload);
+		const [user] = await connection.execute(
+			"SELECT * FROM USERS WHERE id = ?",
+			[payload.id],
+			(err, res) => {
+				if (err) throw err;
+				console.log("result->", res);
+			}
+		);
+
+		if (user.length < 1) {
+			throw new ApiError(404, "User Not Found");
+		}
+
+		const hashedPassword = await hashPassword(password);
+
+		await connection.execute(
+			"UPDATE USERS SET password = ? WHERE id = ?",
+			[hashedPassword, payload.id],
+			(err, res) => {
+				if (err) throw err;
+				console.log("result->", res);
+			}
+		);
+
+		return ApiResponse.success(res, 200, "Password Changed Successfully", {
+			id: payload.id,
+		});
+	} catch (err) {
+		return ApiResponse.error(res, err.message, err.statusCode || 500);
+	}
+}

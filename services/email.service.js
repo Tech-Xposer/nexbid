@@ -13,6 +13,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (email, mailContent) => {
   try {
+    // send mail with defined transport object
     const info = await transporter.sendMail({
       from: process.env.ADMIN_MAIL,
       to: email,

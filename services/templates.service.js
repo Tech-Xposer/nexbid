@@ -20,6 +20,7 @@ const userPasswordResetTemplate = (name, resetLink) => {
         <h3><b>Dear ${name}, </br> Please reset your password by clicking <a href=${resetLink} target='__blank'>here</a>.</b></h3>
         <br> ${resetLink}
         <p><b>Note:</b> This link will expire after 30 minutes.</p>
+        <p>Send your password in body</p>
         <p><strong>Caution:</strong> Please do not share this email with anyone for security reasons. This link is unique to your account and should not be shared.</p>
         <p>If you did not request a password reset, please ignore this email.</p>
         <p><h3>Thanks,</h3><h3>Team NexBid</h3></p>`,
