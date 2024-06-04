@@ -54,70 +54,70 @@ CREATE DATABASE nexbid;
 ### Create the necessary tables.
 
 ```
-USE nexbid;
 
-CREATE TABLE items (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT NOT NULL,
-  starting_price DECIMAL(10, 2) NOT NULL,
-  current_price DECIMAL(10, 2) DEFAULT 0.00,
-  image_url VARCHAR(255),
-  end_time TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Database: `nexbid`
+CREATE DATABASE IF NOT EXISTS `nexbid`;
+USE `nexbid`;
 
-CREATE TABLE bids (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  item_id INT,
-  user_id INT,
-  bid_amount DECIMAL(10, 2) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (item_id) REFERENCES items(id),
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
 
-CREATE TABLE notifications (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  message VARCHAR(255) NOT NULL,
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'user',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-### Install Required Packages
+CREATE TABLE `items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `starting_price` decimal(10,2) NOT NULL,
+  `current_price` decimal(10,2) DEFAULT 0.00,
+  `image_url` varchar(255) DEFAULT NULL,
+  `end_time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_by` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `items_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-Navigate to the project directory and install the necessary packages using npm:
+CREATE TABLE `bids` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `item_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `bid_amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `item_id` (`item_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `bids_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `bids_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-```bash
-npm install
-```
 
-### Create the .env File
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `message` varchar(255) NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-Create a .env file in the root of the project directory and add the following environment variables
-
-```
-PORT = 8001
-DB_NAME=nexbid
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=yourpassword
-BASE_URL = 'http://localhost:8001'
-ADMIN_MAIL = 'provide-your-email'
-ADMIN_PASSWORD = 'provideyour-app-password'
-JWT_SECRET = 'provide-your-hwt-secret'
-COOKIE_SECRET ='provide-your-secret'
+COMMIT;
 
 ```
 
@@ -136,7 +136,6 @@ Alternatively, you can start the project using Node.js directly:
 ```Bash
 node index.js
 ```
-
 
 ## Register a new user
 
@@ -625,4 +624,5 @@ Authorization: Bearer <your-token-here>
 	"end_time": "2024-06-06"
 }
 ```
+
 This `README.md` file provides a clear and comprehensive guide to setting up and running the NexBid project. It includes all necessary steps, from cloning the repository and setting up the MySQL database to installing required packages and running the project.
